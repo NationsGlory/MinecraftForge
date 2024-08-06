@@ -1,7 +1,0 @@
-*.DS_Store
-/logs/
-/*.pyc
-/forge-*/
-/patches-old/
-/mcp/
-/eclipse/
