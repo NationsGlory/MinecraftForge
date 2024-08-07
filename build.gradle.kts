@@ -1,4 +1,5 @@
 import de.undercouch.gradle.tasks.download.Download
+import fr.nationsglory.forgegradledev.ApplyPatches
 import fr.nationsglory.forgegradledev.DecompJar
 import fr.nationsglory.forgegradledev.MergeJars
 import fr.nationsglory.forgegradledev.RemapJar
@@ -96,3 +97,8 @@ tasks.register<Copy>("extractSources") {
     dependsOn("deobfMerged")
 }
 
+tasks.register<ApplyPatches>("applyForgePatches") {
+    sourceDirectory.set(project.layout.buildDirectory.dir("tmp/sources"))
+    targetDirectory.set(project.layout.buildDirectory.dir("tmp/minecraft_patched"))
+    patchesDirectory.set(project.layout.projectDirectory.dir("patches/fml/"))
+}
