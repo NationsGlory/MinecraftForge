@@ -26,6 +26,28 @@ repositories {
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("com.google.code.gson:gson:2.10")
+    implementation("argo:argo:2.25_fixed")
+    implementation("org.lwjgl.lwjgl:lwjgl:2.9.0")
+    implementation("org.lwjgl.lwjgl:lwjgl-platform:2.9.0")
+    implementation("org.lwjgl.lwjgl:lwjgl_util:2.9.0")
+    implementation("com.paulscode:soundsystem:20120107")
+    implementation("com.paulscode:libraryjavasound:20101123")
+    implementation("com.paulscode:librarylwjglopenal:20100824")
+    implementation("com.paulscode:codecjorbis:20101023")
+    implementation("com.paulscode:codecwav:20101023")
+    implementation("commons-io:commons-io:2.4")
+    implementation("org.apache.commons:commons-lang3:3.1")
+    implementation("com.google.guava:guava:14.0.1")
+    implementation("net.java.jinput:jinput:2.0.5")
+    implementation("net.java.jinput:jinput-platform:2.0.5")
+    implementation("net.sf.jopt-simple:jopt-simple:4.5")
+    implementation("net.java.jutils:jutils:1.0.0\"")
+    implementation("net.minecraft:launchwrapper:1.8")
+    implementation("lzma:lzma:0.0.1")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.47")
+    implementation("org.ow2.asm:asm-commons:6.2.1")
+    implementation("org.ow2.asm:asm-util:6.2.1")
 }
 
 sourceSets.create("client") {
@@ -73,7 +95,9 @@ tasks.register<RemapJar>("deobfMerged") {
     dependsOn("mergeClientServer", "extractMcpConfig")
     inputJar.set(project.layout.buildDirectory.file("tmp/merged.jar"))
     outputFile.set(project.layout.buildDirectory.file("tmp/merged-deobf.jar"))
-    mappings.set(project.layout.buildDirectory.file("unpacked/conf/notch-mcp.srg"))
+    mappings.set(project.layout.buildDirectory.file("unpacked/conf/packaged.srg"))
+    accessTransformers.add(project.layout.projectDirectory.file("src/common/resources/fml_at.cfg"))
+    accessTransformers.add(project.layout.projectDirectory.file("src/common/resources/forge_at.cfg"))
 }
 
 tasks.register<DecompJar>("decompMerged") {
@@ -86,19 +110,20 @@ tasks.register<DecompJar>("decompMerged") {
 tasks.register<MergeJars>("mergeClientServer") {
     dependsOn("downloadClient", "downloadServer")
     outputFile.set(project.layout.buildDirectory.file("tmp/merged.jar"))
-    inputJars.add(project.layout.buildDirectory.file("tmp/server.jar"))
-    inputJars.add(project.layout.buildDirectory.file("tmp/client.jar"))
+    serverJar.set(project.layout.buildDirectory.file("tmp/server.jar"))
+    clientJar.set(project.layout.buildDirectory.file("tmp/client.jar"))
     excludes.addAll("argo/", "com/google/", "org/")
 }
 
 tasks.register<Copy>("extractSources") {
     from(zipTree(layout.buildDirectory.file("unpacked/merged-deobf.jar")))
     into(project.layout.buildDirectory.file("tmp/minecraft/"))
-    dependsOn("deobfMerged")
+    dependsOn("decompMerged")
 }
 
 tasks.register<ApplyPatches>("applyForgePatches") {
-    sourceDirectory.set(project.layout.buildDirectory.dir("tmp/sources"))
+    dependsOn("extractSources")
+    sourceDirectory.set(project.layout.buildDirectory.dir("tmp/minecraft"))
     targetDirectory.set(project.layout.buildDirectory.dir("tmp/minecraft_patched"))
     patchesDirectory.set(project.layout.projectDirectory.dir("patches/fml/"))
 }

@@ -1,14 +1,12 @@
 package fr.nationsglory.forgegradledev
 
-import net.md_5.specialsource.Jar
-import net.md_5.specialsource.JarMapping
-import net.md_5.specialsource.JarRemapper
-import net.md_5.specialsource.RemapperPreprocessor
+import net.md_5.specialsource.*
 import net.md_5.specialsource.provider.JarProvider
 import net.md_5.specialsource.provider.JointProvider
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.*
 
 abstract class RemapJar : DefaultTask() {
@@ -23,14 +21,17 @@ abstract class RemapJar : DefaultTask() {
 
     @get:InputFiles
     @get:Optional
-    val accessTransformers: FileCollection? = null
+    abstract val accessTransformers: ListProperty<RegularFile>
 
     @TaskAction
     fun doTask() {
         val jarMapping = JarMapping()
         jarMapping.loadMappings(mappings.get().asFile)
 
-        val srgPrecessor = RemapperPreprocessor(null, jarMapping, null)
+        val accessMap = AccessMap()
+        accessTransformers.get().forEach { file -> accessMap.loadAccessTransformer(file.asFile) }
+
+        val srgPrecessor = RemapperPreprocessor(null, jarMapping, accessMap)
 
         val jarRemapper = JarRemapper(srgPrecessor, jarMapping)
 
